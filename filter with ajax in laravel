@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">.
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Job Application Form</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"
+        rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin: 50px;
+        }
+
+        .filter-box {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 5px;
+        }
+
+        .product-list {
+            width: 60%;
+        }
+
+        .product {
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding: 14px;
+            border-radius: 5px;
+            width: 482px;
+              margin-top: 10px
+        }
+
+        .product h3 {
+            margin: 0;
+        }
+
+        .product p {
+            margin: 5px 0;
+        }
+
+        /* Add this CSS to your existing styles */
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.6);
+        }
+
+        /* Optional: Style the options */
+        .form-group option {
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="filter-box">
+            <h2>Filter Options</h2>
+            <form id="filter-form">
+                <div class="form-group">
+                    <label for="color">Color:</label>
+                    <select id="color" name="color">
+                        <option value="">Select Color</option>
+                        @foreach ($products as $product)
+                            <option value="{{ $product->color }}">{{ $product->color }}</option>
+                        @endforeach
+
+                        <!-- Add more options as needed -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category:</label>
+                    <select id="category" name="category">
+                        <option value="">Select Category</option>
+
+                        @foreach ($products as $product)
+                            <option value="{{ $product->category }}">{{ $product->category }}</option>
+                        @endforeach
+
+
+                        <!-- Add more options as needed -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="price-range">Max price:</label>
+                    <select id="price_range" name="price-range">
+                        <option value="">Select Maximum Price</option>
+                        <option value="50">$50</option>
+                        <option value="100">$100</option>
+                        <option value="200">$200</option>
+                        <!-- Add more options as needed -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="brand">Brand:</label>
+                    <select id="brand" name="brand">
+                        <option value="">Select Brand</option>
+                        @foreach ($products as $product)
+                            <option value="{{ $product->brand }}">{{ $product->brand }}</option>
+                        @endforeach
+
+                    </select>
+                </div>
+                <button type="submit">Filter</button>
+            </form>
+        </div>
+        <div class="product_list">
+
+            @foreach ($products as $product )
+            <div class="product">
+                <h2>{{$product['product_name']}}</h2>
+                <p>{{$product['brand']}}</p>
+                <p>{{$product['category']}}</p>
+                <p>{{$product['price']}}</p>
+                </div>
+            @endforeach
+
+
+        </div>
+
+    </div>
+
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+
+
+    <script>
+        $(document).ready(function() {
+
+
+
+            $('#filter-form').on('submit', function(event) {
+                event.preventDefault();
+                var htmldata='';
+                var csrf_token = $('meta[name="csrf-token"]').attr('content'); // Retrieve CSRF token
+                var formData = {
+                    _token: csrf_token,
+                    color: $('#color').val(),
+                    brand: $('#brand').val(),
+                    category: $('#category').val(),
+                    price_range: $('#price_range').val(),
+
+                }
+
+
+                $.ajax({
+                    type: 'POST',
+                    url: '{{ route('store-filter') }}',
+                    data: formData,
+                    success: function(response) {
+                        // console.log('Success:', response.result);
+
+                        response.result.forEach(function(item) {
+
+                             htmldata += `
+
+                            <div class="product">
+<h2>${item['product_name']}</h2>
+<p>${item['brand']}</p>
+<p>${item['category']}</p>
+<p>${item['price']}</p>
+</div>
+`;
+
+
+
+                        });
+
+
+                        $('.product_list').empty().append(htmldata);
+
+
+
+                    },
+                    error: function(xhr, status, error) {
+
+                    }
+
+
+                });
+
+
+
+
+            });
+
+
+
+
+
+
+
+
+
+            $.ajax({
+                url: '{{ route('getdata') }}', // Replace with your URL
+                type: 'GET',
+                success: function(data) {
+
+                    console.log(data.products);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    // This function will be called if there's an error
+                    console.error('Error:', textStatus, errorThrown);
+                }
+            });
+
+
+
+        });
+    </script>
+</body>
+
+</html>
